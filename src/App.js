@@ -9,6 +9,8 @@ import Cart from './components/Cart';
 import Default from './components/Default';
 import Modal from './components/Modal';
 import Orders from './components/Orders';
+import CheckoutPage from './pages/CheckoutPage'; // or './components/CheckoutPage'
+
 import PaymentPage from './components/PaymentPage';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+
         <Route path="*" element={<Default />} /> {/* Default route for unmatched paths */}
       </Routes>
       <Modal />
