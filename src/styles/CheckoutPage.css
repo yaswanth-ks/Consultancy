@@ -1,0 +1,46 @@
+/* Overlay with background blur */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Blue success card */
+.success-card {
+  background-color: #2196F3; /* Blue background */
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: popup 0.3s ease-out;
+  color: white;
+}
+
+/* Tick inside white circle */
+.tick-animation {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: white;
+  color: #4CAF50;
+  font-size: 40px;
+  line-height: 80px;
+  margin: 0 auto;
+  animation: tick 0.5s ease-in-out;
+}
+
+/* Heading color override */
+.success-card h2 {
+  color: white;
+  font-size: 24px;
+  margin-top: 20px;
+}
