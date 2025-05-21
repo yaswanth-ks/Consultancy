@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/CheckoutPage.css'; 
-
+import qrCodeImage from '../img/product-9.png'; // Adjust the path as necessary
 
 export default function CheckoutPage() {
   const [isLoggedIn] = useState(true);
@@ -174,17 +174,17 @@ if (!upiPattern.test(value)) {
           {paymentComplete && <span style={{ color: 'green' }}>✅</span>}
         </div>
         <div className="card-body">
-          <div className="mb-3 d-flex flex-wrap gap-3">
-            <button className="btn btn-success" onClick={() => setPaymentMethod('upi')}>Pay with UPI</button>
-            <button className="btn btn-info" onClick={() => setPaymentMethod('card')}>Pay with Card</button>
-            <button className="btn btn-warning" onClick={() => setPaymentMethod('cod')}>Cash on Delivery</button>
+          <div className="mb-3 d-flex flex-wrap gap-3 ">
+            <button className="btn btn-success mr-4" onClick={() => setPaymentMethod('upi')}>Pay with UPI</button>
+            <button className="btn btn-info mr-4" onClick={() => setPaymentMethod('card')}>Pay with Card</button>
+            <button className="btn btn-warning mr-4" onClick={() => setPaymentMethod('cod')}>Cash on Delivery</button>
           </div>
 
           {/* UPI */}
           {paymentMethod === 'upi' && (
-            <div className="row align-items-center">
-              <div className="col-md-4">
-                <img src="/path-to-qr-code.png" alt="QR Code" className="img-fluid" />
+            <div className="row align-items-center qr-img">
+              <div className="col-md-4 ">
+                <img src={qrCodeImage} alt="QR Code" className="img-fluid" />
               </div>
               <div className="col-md-6">
                 <input
