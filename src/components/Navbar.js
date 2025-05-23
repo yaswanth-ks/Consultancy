@@ -48,10 +48,17 @@ export default class Navbar extends Component {
           </Link>
 
           <ul className="navbar-nav align-items-center">
-            <li className="nav-item ml-5">
-              <Link to="/" className="nav-link">YA-Lights</Link>
-            </li>
-          </ul>
+  <li className="nav-item ml-5">
+    <Link 
+      to="/" 
+      className="nav-link" 
+      style={{ fontFamily: "'Pacifico', cursive", fontWeight: 'bold', fontSize: '1.5rem' }}
+    >
+      YA-Lights
+    </Link>
+  </li>
+</ul>
+
 
           <Link to="/cart" className="ml-auto mr-2">
             <ButtonContainer>

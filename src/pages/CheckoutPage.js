@@ -1,309 +1,205 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/CheckoutPage.css'; 
-import qrCodeImage from '../img/product-9.png'; // Adjust the path as necessary
+import { ProductConsumer } from '../context';
 
 export default function CheckoutPage() {
-  const [isLoggedIn] = useState(true);
-  const [user] = useState({ name: "Satheesh", email: "satheesh@gmail.com" });
-  const [cart] = useState([
-    { id: 1, name: "LED High Bay Light ", price: 150, quantity: 1 },
-    { id: 2, name: "LED Street Light", price: 120, quantity: 1 },
-    { id: 3, name: "LED Flood Light", price: 95, quantity: 1 },
-  ]);
-  const [showCart, setShowCart] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState("12 Ranganathan Street, T. Nagar, Chennai");
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [upiId, setUpiId] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [codSelected, setCodSelected] = useState(false);
-
-  const [paymentComplete, setPaymentComplete] = useState(false);
+  const [state, setState] = useState('');
+  const [district, setDistrict] = useState('');
+  const [street, setStreet] = useState('');
+  const [apartment, setApartment] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [phone, setPhone] = useState('');
   const [orderPlaced, setOrderPlaced] = useState(false);
 
-  const [upiError, setUpiError] = useState('');
-  const [cardError, setCardError] = useState('');
-  const [cvvError, setCvvError] = useState('');
+  // States and districts dropdown options
+  const districtsByState = {
+  "Tamil Nadu": [
+    "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore",
+    "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kancheepuram",
+    "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai", "Nagapattinam",
+    "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram",
+    "Ranipet", "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni",
+    "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur",
+    "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore",
+    "Viluppuram", "Virudhunagar"
+  ],
+  "Karnataka": [
+    "Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban",
+    "Bidar", "Chamarajanagar", "Chikballapur", "Chikkamagaluru", "Chitradurga",
+    "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri",
+    "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur",
+    "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada",
+    "Vijayapura", "Yadgir"
+  ],
+  "Kerala": [
+    "Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam",
+    "Kottayam", "Kozhikode", "Malappuram", "Palakkad", "Pathanamthitta",
+    "Thiruvananthapuram", "Thrissur", "Wayanad"
+  ],
+  "Andhra Pradesh": [
+    "Anakapalli", "Ananthapuramu", "Annamayya", "Bapatla", "Chittoor",
+    "East Godavari", "Eluru", "Guntur", "Kakinada", "Konaseema",
+    "Krishna", "Kurnool", "Nandyal", "Nellore", "NTR", "Palnadu",
+    "Parvathipuram Manyam", "Prakasam", "Srikakulam", "Tirupati",
+    "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"
+  ]
+};
+  const statesList = Object.keys(districtsByState);
 
-  const defaultAddresses = [
-    "12 Ranganathan Street, T. Nagar, Chennai",
-    "55 Eldams Road, Alwarpet, Chennai",
-    "89 OMR Road, Sholinganallur, Chennai"
-  ];
-
-  const loginComplete = Boolean(user);
-  const deliveryComplete = Boolean(selectedAddress);
-  const summaryComplete = cart.length > 0;
-
-  useEffect(() => {
-    if (
-      (paymentMethod === 'upi' && upiId && !upiError) ||
-      (paymentMethod === 'card' && cardNumber && cvv && !cardError && !cvvError) ||
-      (paymentMethod === 'cod' && selectedAddress)
-    ) {
-      setPaymentComplete(true);
-    } else {
-      setPaymentComplete(false);
-    }
-  }, [selectedAddress, paymentMethod, upiId, cardNumber, cvv, expiryDate, upiError, cardError, cvvError]);
-
-  const calculateCartTotal = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  const districts = districtsByState[state] || [];
 
   const handleConfirmOrder = () => {
-    if (!paymentComplete) {
-      alert("Please complete payment section properly.");
+    if (!state || !district || !street || !pincode) {
+      alert('Please fill all address fields');
       return;
     }
-
-    setOrderPlaced(true); // Show the success message after order is placed
-    setTimeout(() => {
-      setOrderPlaced(false); // Hide success message after 5 seconds
-    }, 1000);
-  };
-
-  const handleUpiChange = (e) => {
-    const value = e.target.value;
-    setUpiId(value);
-
-    // UPI validation: Should be in the form of username@okaxis, username@oksbi, etc.
-    const validUpiDomains = ['@okaxis', '@oksbi', '@ybl', '@paytm', '@ibl'];
-const upiPattern = /^[a-zA-Z0-9_.+-]+(@okaxis|@oksbi|@ybl|@paytm|@ibl)$/;
-
-if (!upiPattern.test(value)) {
-  setUpiError('UPI must be in format username@bank (okaxis, oksbi, ybl, paytm, ibl only)');
-} else {
-  setUpiError('');
-}
-
-  };
-
-  const handleCardNumberChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); // Allow only digits
-    setCardNumber(value);
-    if (value.length !== 16) {
-      setCardError('Card number must be 16 digits');
-    } else {
-      setCardError('');
+    if (!phone) {
+      alert('Please enter your phone number');
+      return;
     }
-  };
-
-  const handleCvvChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); // Allow only digits
-    setCvv(value);
-    if (value.length !== 3) {
-      setCvvError('CVV must be 3 digits');
-    } else {
-      setCvvError('');
-    }
+    setOrderPlaced(true);
+    setTimeout(() => setOrderPlaced(false), 3000);
   };
 
   return (
-    <div className="container my-5">
-      <h2 className="mb-4">Checkout</h2>
+    <ProductConsumer>
+      {value => {
+        const { user } = value; // get real user from context
 
-      {/* 1. Login */}
-      <div className="card mb-3">
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <span>1. Login</span>
-          {loginComplete && <span style={{ color: 'green' }}>✅</span>}
-        </div>
-        <div className="card-body">
-          <p>You're logged in as <strong>{user.name}</strong>.</p>
-          <p>{user.email}</p>
-        </div>
-      </div>
+        return (
+          <div className="container my-5">
+            <h2 className="mb-4">Checkout</h2>
 
-      {/* 2. Delivery Address */}
-      <div className="card mb-3">
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <span>2. Delivery Address</span>
-          {deliveryComplete && <span style={{ color: 'green' }}>✅</span>}
-        </div>
-        <div className="card-body">
-          <label>Select an address:</label>
-          <select
-            className="form-control"
-            value={selectedAddress}
-            onChange={(e) => setSelectedAddress(e.target.value)}
-          >
-            <option value="">-- Select --</option>
-            {defaultAddresses.map((address, index) => (
-              <option key={index} value={address}>{address}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* 3. Order Summary */}
-<div className="card mb-3">
-  <div
-    className="card-header d-flex justify-content-between align-items-center"
-    onClick={() => setShowCart(!showCart)}
-    style={{ cursor: 'pointer' }}
-  >
-    <span>3. Order Summary {showCart ? '▲' : '▼'}</span>
-    {summaryComplete && <span style={{ color: 'green' }}>✅</span>}
-  </div>
-
-  {showCart && (
-    <div className="card-body">
-      <h5>Items in Cart:</h5>
-      {cart.map((item) => (
-        <div key={item.id} className="mb-2">
-          <strong>{item.name}</strong><br />
-          Price: ${item.price}<br />
-          Item total: ${item.price * item.quantity}
-        </div>
-      ))}
-      <hr />
-      <h6>Subtotal: ${calculateCartTotal().toFixed(2)}</h6>
-      <h6>Tax (10%): ${(calculateCartTotal() * 0.1).toFixed(2)}</h6>
-      <h5>Total: ${(calculateCartTotal() * 1.1).toFixed(2)}</h5>
-    </div>
-  )}
-</div>
-
-
-      {/* 4. Payment */}
-      <div className="card mb-3">
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <span>4. Payment</span>
-          {paymentComplete && <span style={{ color: 'green' }}>✅</span>}
-        </div>
-        <div className="card-body">
-          <div className="mb-3 d-flex flex-wrap gap-3 ">
-            <button className="btn btn-success mr-4" onClick={() => setPaymentMethod('upi')}>Pay with UPI</button>
-            <button className="btn btn-info mr-4" onClick={() => setPaymentMethod('card')}>Pay with Card</button>
-            <button className="btn btn-warning mr-4" onClick={() => setPaymentMethod('cod')}>Cash on Delivery</button>
-          </div>
-
-          {/* UPI */}
-          {paymentMethod === 'upi' && (
-            <div className="row align-items-center qr-img">
-              <div className="col-md-4 ">
-                <img src={qrCodeImage} alt="QR Code" className="img-fluid" />
+            {/* 1. Login */}
+            <div className="card mb-3">
+              <div className="card-header">
+                <span>1. Login</span>
               </div>
-              <div className="col-md-6">
+              <div className="card-body">
+                <p>You're logged in as <strong>{user?.name || ''}</strong>.</p>
+                <p>{user?.email ? user.email : 'yaswanth@gmail.com'}</p>
+              </div>
+            </div>
+
+            {/* 2. Delivery Address */}
+            <div className="card mb-3">
+              <div className="card-header">
+                <span>2. Delivery Address</span>
+              </div>
+              <div className="card-body">
+                <div className="form-group mb-3">
+                  <label>State</label>
+                  <select
+                    className="form-control"
+                    value={state}
+                    onChange={(e) => {
+                      setState(e.target.value);
+                      setDistrict('');
+                    }}
+                  >
+                    <option value="">-- Select State --</option>
+                    {statesList.map((st) => (
+                      <option key={st} value={st}>{st}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group mb-3">
+                  <label>District</label>
+                  <select
+                    className="form-control"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    disabled={!state}
+                  >
+                    <option value="">-- Select District --</option>
+                    {districts.map((dist) => (
+                      <option key={dist} value={dist}>{dist}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group mb-3">
+                  <label>Street Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter street name"
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group mb-3">
+                  <label>Apartment / House No.</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter apartment or house no."
+                    value={apartment}
+                    onChange={(e) => setApartment(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group mb-3">
+                  <label>Pincode</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter pincode"
+                    maxLength="6"
+                    value={pincode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setPincode(val);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Confirmation & Contact */}
+            <div className="card mb-3">
+              <div className="card-header">
+                <span>3. Confirmation & Contact</span>
+              </div>
+              <div className="card-body d-flex align-items-center gap-3">
                 <input
-                  type="text"
+                  type="tel"
                   className="form-control"
-                  placeholder="Enter UPI ID"
-                  value={upiId}
-                  onChange={handleUpiChange}
+                  placeholder="Enter your phone number"
+                  value={phone}
+                  style={{ maxWidth: '250px' }}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
-                {upiError && <div className="text-danger">{upiError}</div>}
-              </div>
-              <div className="col-md-2">
-                <button className="btn btn-outline-success mt-2" onClick={() => alert("UPI ID Saved!")}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleConfirmOrder}
+                >
                   Done
                 </button>
               </div>
+
+              <p className="mt-3"><strong>Contact us directly:</strong></p>
+              <ul>
+                <li>📞 Phone: <a href="tel:+919876543210">+91 98765 43210</a></li>
+                <li>📧 Email: <a href="mailto:yaswanth@gmail.com">yaswanth@gmail.com</a></li>
+                <li>💬 WhatsApp: <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer">Chat with us</a></li>
+              </ul>
             </div>
-          )}
 
-          {/* Card */}
-          {paymentMethod === 'card' && (
-            <div className="row">
-              <div className="col-md-6 mb-2">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Card Number"
-                  value={cardNumber}
-                  maxLength="16"
-                  onChange={handleCardNumberChange}
-                />
-                {cardError && <div className="text-danger">{cardError}</div>}
+            {orderPlaced && (
+              <div className="overlay">
+                <div className="success-card">
+                  <div className="tick-animation">✔️</div>
+                  <h2>Congratulations!</h2>
+                  <p>Your order has been placed successfully. Our team will contact you shortly.</p>
+                </div>
               </div>
-              <div className="col-md-3 mb-2">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="CVV"
-                  value={cvv}
-                  maxLength="3"
-                  onChange={handleCvvChange}
-                />
-                {cvvError && <div className="text-danger">{cvvError}</div>}
-              </div>
-              <div className="col-md-3 mb-2 d-flex gap-2">
-                <select
-                  className="form-control"
-                  value={expiryDate.split('/')[0]}
-                  onChange={(e) =>
-                    setExpiryDate(`${e.target.value}/${expiryDate.split('/')[1] || ''}`)
-                  }
-                >
-                  <option value="">MM</option>
-                  {[...Array(12).keys()].map((m) => (
-                    <option key={m + 1} value={(m + 1).toString().padStart(2, '0')}>
-                      {(m + 1).toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="form-control"
-                  value={expiryDate.split('/')[1]}
-                  onChange={(e) =>
-                    setExpiryDate(`${expiryDate.split('/')[0] || ''}/${e.target.value}`)
-                  }
-                >
-                  <option value="">YY</option>
-                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i).map(
-                    (year) => (
-                      <option key={year} value={year.toString().slice(2)}>
-                        {year}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* COD */}
-          {paymentMethod === 'cod' && (
-            <div>
-              <div className="form-check">
-                <input
-                  type="radio"
-                  id="cod-address"
-                  className="form-check-input"
-                  checked={codSelected}
-                  onChange={() => setCodSelected(true)}
-                />
-                <label className="form-check-label" htmlFor="cod-address">
-                  Pay on Delivery (COD)
-                </label>
-              </div>
-              <p><strong>Selected Address:</strong> {selectedAddress}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Confirm Button */}
-      <div className="card mb-3">
-        <div className="card-body text-center">
-          <button className="btn btn-primary" onClick={handleConfirmOrder}>
-            Confirm Order
-          </button>
-        </div>
-      </div>
-
-      {orderPlaced && (
-  <div className="overlay">
-    <div className="success-card">
-      <div className="tick-animation">✔️</div>
-      <h2>Congratulations!</h2>
-      <p>Your order has been placed successfully.</p>
-    </div>
-  </div>
-)}
-    </div>
+            )}
+          </div>
+        );
+      }}
+    </ProductConsumer>
   );
 }
-
