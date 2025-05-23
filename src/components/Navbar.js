@@ -4,6 +4,7 @@ import logo from '../logo.svg';
 import styled from 'styled-components';
 import { ButtonContainer } from './Button';
 import AuthModal from './AuthModal';
+import '../styles/CheckoutPage.css'
 
 export default class Navbar extends Component {
   state = {
@@ -67,7 +68,7 @@ export default class Navbar extends Component {
                 {user.name.charAt(0).toUpperCase()}
               </div>
               {showDropdown && (
-                <div className="dropdown-menu show p-3">
+                <div className="dropdown-menu show p-3 menus" id='menus'>
                   <p className="mb-1 text-center">{user.name}</p>
                   <Link to="/orders">
                     <button className="btn btn-secondary btn-sm mb-2 w-100">
@@ -97,11 +98,14 @@ export default class Navbar extends Component {
 
 const NavWrapper = styled.nav`
   background: var(--mainBlue);
+  position: relative; /* add to parent nav if needed */
+
   .nav-link {
     color: var(--mainWhite) !important;
     font-size: 1.3rem;
     text-transform: capitalize;
   }
+
   .profile-circle {
     width: 35px;
     height: 35px;
@@ -114,12 +118,31 @@ const NavWrapper = styled.nav`
     cursor: pointer;
     margin-right: 10px;
   }
-  .dropdown-menu {
-    min-width: 200px;  
-    background-color: var(--mainWhite);  
-    border-radius: 8px; 
-  }
+
+  .dropdown {
+  position: relative;
+  display: inline-block;
+  /* Add this to prevent overflow on the page */
+  max-width: 150px; /* or whatever width your profile circle + dropdown fits */
+  overflow: visible; /* dropdown must be visible outside parent */
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 45px;
+  right: 0; /* try left: 0 if this overflows */
+  min-width: 200px;
+  max-width: 250px;
+  background-color: var(--mainWhite);
+  border-radius: 8px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+  z-index: 1000;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+
   .dropdown-menu button {
-    width: 100%; 
+    width: 100%;
   }
 `;
